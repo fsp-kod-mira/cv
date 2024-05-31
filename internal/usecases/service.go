@@ -28,7 +28,6 @@ func (s *CvsService) GetOne(ctx context.Context, id string) (*domain.CV, error) 
 		slog.Error(err.Error())
 		return nil, fmt.Errorf("error while get cv by id %d", err)
 	}
-	slog.Info("2")
 
 	fs, err := s.GetFeaturesByCvId(ctx, id)
 	if err != nil {
@@ -36,7 +35,6 @@ func (s *CvsService) GetOne(ctx context.Context, id string) (*domain.CV, error) 
 		return nil, fmt.Errorf("error while get cv features by id %d", err)
 	}
 
-	slog.Info("3")
 	domainCv := &domain.CV{
 		Id:           id,
 		Status:       cv.Status,
@@ -45,7 +43,6 @@ func (s *CvsService) GetOne(ctx context.Context, id string) (*domain.CV, error) 
 		TotalScore:   cv.TotalScore,
 	}
 
-	slog.Info("4")
 	for _, f := range fs {
 		parsedFeature, err := s.featuresClient.GetFeaturesById(ctx, &features.IdStruct{
 			Id: uint64(f.FeatureId),

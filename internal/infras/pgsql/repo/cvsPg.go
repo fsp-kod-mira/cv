@@ -33,12 +33,12 @@ func (u *cvsPg) GetFeaturesByCvId(ctx context.Context, id string) ([]*domain.Fea
 	}), err
 }
 
-func (u *cvsPg) Upload(ctx context.Context, cv *domain.CV) error {
+func (u *cvsPg) Upload(ctx context.Context, uploadedById string, fileId string) error {
 	querier := postgresql.New(u.pg.GetDB())
 	params := postgresql.CreateCvParams{
 		ID:           uuid.New().String(),
-		UploadedByID: cv.UploadedById,
-		FileID:       cv.FileId,
+		UploadedByID: uploadedById,
+		FileID:       fileId,
 	}
 
 	if err := querier.CreateCv(ctx, params); err != nil {
@@ -64,7 +64,6 @@ func (u *cvsPg) GetOne(ctx context.Context, id string) (*domain.CV, error) {
 	}, nil
 }
 
-// GetAll implements usecases.CvsRepository.
 func (u *cvsPg) GetAll(ctx context.Context, limit int, offset int) ([]*domain.CV, error) {
 	querier := postgresql.New(u.pg.GetDB())
 	cvs, err := querier.GetAllCvs(ctx, postgresql.GetAllCvsParams{

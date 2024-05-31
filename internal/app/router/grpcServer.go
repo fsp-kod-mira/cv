@@ -19,7 +19,16 @@ type CvService struct {
 	log     *slog.Logger
 }
 
-// GetAll implements cv.CvServiceServer.
+func (s *CvService) Upload(ctx context.Context, data *cv.UploadRequest) (*cv.Empty, error) {
+	s.log.Info("trying to upload cv")
+	if err := s.service.Upload(ctx, data.UploadedById, data.FileId); err != nil {
+		s.log.Error(err.Error())
+		return nil, fmt.Errorf("error while upload cv")
+	}
+
+	return nil, nil
+}
+
 func (s *CvService) GetAll(ctx context.Context, pag *cv.Paggination) (*cv.GetAllResponse, error) {
 	s.log.Info("trying to get cvs")
 	cvs, err := s.service.GetAll(ctx, int(pag.Limit), int(pag.Offset))
@@ -54,7 +63,6 @@ func (s *CvService) GetOne(ctx context.Context, id *cv.Id) (*cv.CV, error) {
 		return nil, fmt.Errorf("specify id")
 	}
 
-	slog.Info("1")
 	item, err := s.service.GetOne(ctx, id.Id)
 	if err != nil {
 		s.log.Error(err.Error())
@@ -74,10 +82,6 @@ func (s *CvService) GetOne(ctx context.Context, id *cv.Id) (*cv.CV, error) {
 			}
 		}),
 	}, nil
-}
-
-func (s *CvService) Upload(context.Context, *cv.CV) (*cv.Empty, error) {
-	panic("unimplemented")
 }
 
 func NewGRPCServer(grpcServer *grpc.Server, service usecases.CvsUsecases, log *slog.Logger) cv.CvServiceServer {

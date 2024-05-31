@@ -28,7 +28,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CvServiceClient interface {
-	Upload(ctx context.Context, in *CV, opts ...grpc.CallOption) (*Empty, error)
+	Upload(ctx context.Context, in *UploadRequest, opts ...grpc.CallOption) (*Empty, error)
 	GetOne(ctx context.Context, in *Id, opts ...grpc.CallOption) (*CV, error)
 	GetAll(ctx context.Context, in *Paggination, opts ...grpc.CallOption) (*GetAllResponse, error)
 }
@@ -41,7 +41,7 @@ func NewCvServiceClient(cc grpc.ClientConnInterface) CvServiceClient {
 	return &cvServiceClient{cc}
 }
 
-func (c *cvServiceClient) Upload(ctx context.Context, in *CV, opts ...grpc.CallOption) (*Empty, error) {
+func (c *cvServiceClient) Upload(ctx context.Context, in *UploadRequest, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
 	err := c.cc.Invoke(ctx, CvService_Upload_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -72,7 +72,7 @@ func (c *cvServiceClient) GetAll(ctx context.Context, in *Paggination, opts ...g
 // All implementations must embed UnimplementedCvServiceServer
 // for forward compatibility
 type CvServiceServer interface {
-	Upload(context.Context, *CV) (*Empty, error)
+	Upload(context.Context, *UploadRequest) (*Empty, error)
 	GetOne(context.Context, *Id) (*CV, error)
 	GetAll(context.Context, *Paggination) (*GetAllResponse, error)
 	mustEmbedUnimplementedCvServiceServer()
@@ -82,7 +82,7 @@ type CvServiceServer interface {
 type UnimplementedCvServiceServer struct {
 }
 
-func (UnimplementedCvServiceServer) Upload(context.Context, *CV) (*Empty, error) {
+func (UnimplementedCvServiceServer) Upload(context.Context, *UploadRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Upload not implemented")
 }
 func (UnimplementedCvServiceServer) GetOne(context.Context, *Id) (*CV, error) {
@@ -105,7 +105,7 @@ func RegisterCvServiceServer(s grpc.ServiceRegistrar, srv CvServiceServer) {
 }
 
 func _CvService_Upload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CV)
+	in := new(UploadRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func _CvService_Upload_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: CvService_Upload_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CvServiceServer).Upload(ctx, req.(*CV))
+		return srv.(CvServiceServer).Upload(ctx, req.(*UploadRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
