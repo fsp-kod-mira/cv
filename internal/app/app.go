@@ -1,8 +1,11 @@
 package app
 
 import (
+	"cv/api/cv"
 	"cv/internal/config"
 	"cv/internal/interceptors"
+	"cv/internal/usecases"
+	"cv/pkg/engine"
 	"log/slog"
 
 	"google.golang.org/grpc"
@@ -10,18 +13,26 @@ import (
 )
 
 type App struct {
-	cfg *config.Config
-	log *slog.Logger
+	Cfg *config.Config
+	Log *slog.Logger
+	pg  engine.DBEngine
+
+	CvsService    usecases.CvsUsecases
+	CvsGRPCServer cv.CvServiceServer
 }
 
-func New(cfg *config.Config, log *slog.Logger) *App {
+func NewApplication(cfg *config.Config, log *slog.Logger, pg engine.DBEngine,
+	cvsService usecases.CvsUsecases, grpcServer cv.CvServiceServer) *App {
 	return &App{
-		cfg: cfg,
-		log: log,
+		Cfg:           cfg,
+		Log:           log,
+		pg:            pg,
+		CvsService:    cvsService,
+		CvsGRPCServer: grpcServer,
 	}
 }
 
 func (a *App) Run() {
-	s := grpc.NewServer(grpc.UnaryInterceptor(interceptors.LoggingInterceptor((a.log))))
+	s := grpc.NewServer(grpc.UnaryInterceptor(interceptors.LoggingInterceptor((a.Log))))
 	reflection.Register(s)
 }

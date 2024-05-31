@@ -1,7 +1,17 @@
 package usecases
 
-type Repository interface {
+import (
+	"context"
+	"cv/internal/domain"
+)
+
+type CvsRepository interface {
+	Upload(ctx context.Context, cv *domain.CV) error
+	GetOne(ctx context.Context, id string) (*domain.CV, error)
+	GetAll(ctx context.Context, limit, offset int) ([]*domain.CV, error)
 }
 
-type Service interface {
+type CvsUsecases interface {
+	Upload(ctx context.Context, cv *domain.CV) error
+	GetOne(ctx context.Context, id string) (*domain.CV, error)
 }
