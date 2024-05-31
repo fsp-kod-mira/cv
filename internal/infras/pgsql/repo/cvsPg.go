@@ -52,6 +52,7 @@ func (u *cvsPg) GetOne(ctx context.Context, id string) (*domain.CV, error) {
 	querier := postgresql.New(u.pg.GetDB())
 	cv, err := querier.GetCv(ctx, id)
 	if err != nil {
+		slog.Error(err.Error())
 		return nil, GetError("CV")
 	}
 
