@@ -1,0 +1,28 @@
+version: '4.5'
+services:
+  cv-service:
+    build:
+      context: .
+    env_file:
+      - .env.prod
+    environment:
+      WAIT_HOSTS: cv-postgres:5432
+    depends_on:
+      - cv-postgres
+    ports:
+      - "5253:5253"
+
+  cv-postgres:
+    image: postgres:13.14-alpine3.19
+    restart: always
+    volumes:
+      - cv-pgdata:/var/lib/postgresql/data
+    env_file:
+      - .env.pg
+    ports:
+      - "5437:5432"
+
+volumes:
+  cv-pgdata:
+
+

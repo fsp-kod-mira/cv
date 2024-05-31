@@ -1,3 +1,10 @@
+BIN_DIR=bin
+
+build:
+	mkdir -p $(BIN_DIR) #
+	go mod tidy
+	go build -o $(BIN_DIR)/ -v ./cmd
+
 gen:
 	protoc --go_out=. --go-grpc_out=. \
 		-I ./proto ./proto/cv.proto ./proto/feature.proto
