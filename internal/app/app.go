@@ -33,6 +33,7 @@ func NewApplication(cfg *config.Config, log *slog.Logger, pg engine.DBEngine,
 }
 
 func (a *App) Run() {
+	slog.Info("Server started")
 	s := grpc.NewServer(grpc.UnaryInterceptor(interceptors.LoggingInterceptor((a.Log))))
 	reflection.Register(s)
 }

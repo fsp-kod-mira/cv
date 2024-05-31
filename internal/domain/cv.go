@@ -1,10 +1,10 @@
 package domain
 
 type CV struct {
-	Id           string
-	Status       string
-	FileId       string
-	UploadedById string
-	TotalScore   string
-	Features     map[string]interface{}
+	Id           string `json:"id"`
+	Status       string `json:"status"`
+	FileId       string `json:"fileId"`
+	UploadedById string `json:"uploadedById"`
+	TotalScore   string `json:"totalScore"`
+	Features     []*FullfieldFeature
 }

@@ -82,3 +82,32 @@ func (q *Queries) GetCv(ctx context.Context, id string) (Cv, error) {
 	)
 	return i, err
 }
+
+const getFeaturesByCvs = `-- name: GetFeaturesByCvs :many
+select cv_id, feature_id, value
+from cvs_features f
+where f.cv_id = $1
+`
+
+func (q *Queries) GetFeaturesByCvs(ctx context.Context, cvID string) ([]CvsFeature, error) {
+	rows, err := q.db.QueryContext(ctx, getFeaturesByCvs, cvID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CvsFeature
+	for rows.Next() {
+		var i CvsFeature
+		if err := rows.Scan(&i.CvID, &i.FeatureID, &i.Value); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -5,7 +5,6 @@
 package postgresql
 
 import (
-	"database/sql"
 	"database/sql/driver"
 	"fmt"
 )
@@ -60,7 +59,7 @@ type Cv struct {
 }
 
 type CvsFeature struct {
-	CvID      sql.NullString `json:"cv_id"`
-	FeatureID sql.NullString `json:"feature_id"`
-	Value     sql.NullString `json:"value"`
+	CvID      string `json:"cv_id"`
+	FeatureID int32  `json:"feature_id"`
+	Value     string `json:"value"`
 }

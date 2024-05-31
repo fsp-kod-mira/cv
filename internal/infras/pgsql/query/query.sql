@@ -14,3 +14,9 @@ from cvs
 limit $1
 offset $2
 ;
+
+-- name: GetFeaturesByCvs :many
+select *
+from cvs_features f
+where f.cv_id = $1
+;

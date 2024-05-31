@@ -7,6 +7,7 @@
 package app
 
 import (
+	"cv/api/features"
 	"cv/internal/app/router"
 	"cv/internal/config"
 	"cv/internal/infras/pgsql/repo"
@@ -14,6 +15,7 @@ import (
 	"cv/pkg/engine"
 	"fmt"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"log/slog"
 )
 
@@ -26,10 +28,16 @@ func InitApp(grpcServer *grpc.Server, log *slog.Logger) (*App, func(), error) {
 		return nil, nil, err
 	}
 	cvsRepository := repo.NewCvsPostgresRepo(dbEngine, log)
-	cvsUsecases := usecases.NewCvsService(cvsRepository)
+	featureClient, cleanup2, err := initFeaturesGRPC(configConfig)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	cvsUsecases := usecases.NewCvsService(cvsRepository, featureClient)
 	cvServiceServer := router.NewGRPCServer(grpcServer, cvsUsecases, log)
 	app := NewApplication(configConfig, log, dbEngine, cvsUsecases, cvServiceServer)
 	return app, func() {
+		cleanup2()
 		cleanup()
 	}, nil
 }
@@ -44,4 +52,19 @@ func initDB(cfg *config.Config) (engine.DBEngine, func(), error) {
 	}
 
 	return db, func() { db.Close() }, nil
+}
+
+func initFeaturesGRPC(cfg *config.Config) (features.FeatureClient, func(), error) {
+	host := cfg.FeaturesClient.Host
+	port := cfg.FeaturesClient.Port
+
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%s", host, port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	client := features.NewFeatureClient(conn)
+	return client, func() {
+		conn.Close()
+	}, nil
 }

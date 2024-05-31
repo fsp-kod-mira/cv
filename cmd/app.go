@@ -15,7 +15,7 @@ import (
 
 func main() {
 	srv := grpc.NewServer()
-	log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 
 	a, cleanup, err := app.InitApp(srv, log)
 	if err != nil {
