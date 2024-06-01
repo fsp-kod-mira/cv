@@ -93,4 +93,6 @@ func (a *App) FeatureHandler(msg *nats.Msg) {
 		return
 	}
 
+	msg.Ack()
+
 }
