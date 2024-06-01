@@ -14,6 +14,7 @@ import (
 	"cv/internal/usecases"
 	"cv/pkg/engine"
 	"fmt"
+	"github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log/slog"
@@ -35,8 +36,15 @@ func InitApp(grpcServer *grpc.Server, log *slog.Logger) (*App, func(), error) {
 	}
 	cvsUsecases := usecases.NewCvsService(cvsRepository, featureClient)
 	cvServiceServer := router.NewGRPCServer(grpcServer, cvsUsecases, log)
-	app := NewApplication(configConfig, log, dbEngine, cvsUsecases, cvServiceServer)
+	conn, cleanup3, err := initNats(configConfig)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	app := NewApplication(configConfig, log, dbEngine, cvsUsecases, cvServiceServer, conn, featureClient)
 	return app, func() {
+		cleanup3()
 		cleanup2()
 		cleanup()
 	}, nil
@@ -66,5 +74,15 @@ func initFeaturesGRPC(cfg *config.Config) (features.FeatureClient, func(), error
 	client := features.NewFeatureClient(conn)
 	return client, func() {
 		conn.Close()
+	}, nil
+}
+
+func initNats(cfg *config.Config) (*nats.Conn, func(), error) {
+	nc, err := nats.Connect(fmt.Sprintf("nats://%s:%d", cfg.Nats.Host, cfg.Nats.Port))
+	if err != nil {
+		return nil, nil, err
+	}
+	return nc, func() {
+		nc.Close()
 	}, nil
 }

@@ -21,6 +21,22 @@ func NewCvsPostgresRepo(pg engine.DBEngine, log *slog.Logger) usecases.CvsReposi
 	return &cvsPg{pg: pg, log: log}
 }
 
+func (u *cvsPg) AddFeatureToCv(ctx context.Context, cvId string, featureId int, value string) error {
+	querier := postgresql.New(u.pg.GetDB())
+	err := querier.AddFeatureToCV(ctx, postgresql.AddFeatureToCVParams{
+		CvID:      cvId,
+		FeatureID: int32(featureId),
+		Value:     value,
+	})
+	if err != nil {
+		u.log.Error("cannot add feature to cv")
+		return err
+
+	}
+
+	return nil
+}
+
 func (u *cvsPg) GetFeaturesByCvId(ctx context.Context, id string) ([]*domain.Feature, error) {
 	querier := postgresql.New(u.pg.GetDB())
 	features, err := querier.GetFeaturesByCvs(ctx, id)

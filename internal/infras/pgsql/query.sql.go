@@ -9,6 +9,22 @@ import (
 	"context"
 )
 
+const addFeatureToCV = `-- name: AddFeatureToCV :exec
+insert into cvs_features (cv_id, feature_id,value)
+values ($1,$2,$3)
+`
+
+type AddFeatureToCVParams struct {
+	CvID      string `json:"cv_id"`
+	FeatureID int32  `json:"feature_id"`
+	Value     string `json:"value"`
+}
+
+func (q *Queries) AddFeatureToCV(ctx context.Context, arg AddFeatureToCVParams) error {
+	_, err := q.db.ExecContext(ctx, addFeatureToCV, arg.CvID, arg.FeatureID, arg.Value)
+	return err
+}
+
 const createCv = `-- name: CreateCv :exec
 insert into cvs(id, uploaded_by_id, file_id) values($1, $2, $3)
 `

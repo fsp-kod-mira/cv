@@ -14,6 +14,7 @@ import (
 	"log/slog"
 
 	"github.com/google/wire"
+	"github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -23,6 +24,7 @@ func InitApp(grpcServer *grpc.Server, log *slog.Logger) (*App, func(), error) {
 		wire.NewSet(config.New),
 		initDB,
 		initFeaturesGRPC,
+		initNats,
 		wire.NewSet(router.NewGRPCServer),
 		wire.NewSet(repo.NewCvsPostgresRepo),
 		wire.NewSet(usecases.NewCvsService),
@@ -54,5 +56,15 @@ func initFeaturesGRPC(cfg *config.Config) (features.FeatureClient, func(), error
 	client := features.NewFeatureClient(conn)
 	return client, func() {
 		conn.Close()
+	}, nil
+}
+
+func initNats(cfg *config.Config) (*nats.Conn, func(), error) {
+	nc, err := nats.Connect(fmt.Sprintf("nats://%s:%d", cfg.Nats.Host, cfg.Nats.Port))
+	if err != nil {
+		return nil, nil, err
+	}
+	return nc, func() {
+		nc.Close()
 	}, nil
 }

@@ -14,6 +14,10 @@ type Config struct {
 		Port string `env:"DB_PORT" env-default:"5436"`
 		Name string `env:"DB_NAME" env-default:"cvs"`
 	}
+	Nats struct {
+		Host string `env:"NATS_HOST" env-default:"46.29.236.28"`
+		Port int    `env:"NATS_PORT" env-default:"4222"`
+	}
 	GRPC struct {
 		Port string `env:"GRPC_PORT" env-default:"6001"`
 	}

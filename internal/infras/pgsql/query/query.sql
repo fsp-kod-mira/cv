@@ -20,3 +20,7 @@ select *
 from cvs_features f
 where f.cv_id = $1
 ;
+
+-- name: AddFeatureToCV :exec
+insert into cvs_features (cv_id, feature_id,value)
+values ($1,$2,$3);
