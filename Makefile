@@ -7,7 +7,7 @@ build:
 
 gen:
 	protoc --go_out=. --go-grpc_out=. \
-		-I ./proto ./proto/cv.proto ./proto/feature.proto
+		-I ./proto ./proto/cv.proto ./proto/feature.proto ./proto/document.proto
 	wire ./internal/app
 
 migrate.up:

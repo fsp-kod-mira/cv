@@ -2,24 +2,78 @@ package usecases
 
 import (
 	"context"
+	document_parser "cv/api/document-parser"
 	"cv/api/features"
 	"cv/internal/domain"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 
+	"github.com/nats-io/nats.go"
 	"github.com/samber/lo"
 )
 
 type CvsService struct {
 	CvsRepository
 	featuresClient features.FeatureClient
+	nats           *nats.Conn
+	dpClient       document_parser.DocumentClient
 }
 
-func NewCvsService(cvsRepo CvsRepository, featuresClient features.FeatureClient) CvsUsecases {
+func NewCvsService(cvsRepo CvsRepository, featuresClient features.FeatureClient, nats *nats.Conn, dp document_parser.DocumentClient) CvsUsecases {
 	return &CvsService{
 		CvsRepository:  cvsRepo,
 		featuresClient: featuresClient,
+		nats:           nats,
+		dpClient:       dp,
 	}
+}
+
+func (s *CvsService) Upload(ctx context.Context, uploadedById string, fileId string) (string, error) {
+	js, _ := s.nats.JetStream()
+	cvId, err := s.CvsRepository.Upload(ctx, uploadedById, fileId)
+	if err != nil {
+		slog.Error("cannot upload cvs service err while exec repo")
+
+		return "", err
+	}
+	stream, err := s.dpClient.ExtractTextFromDocument(ctx, &document_parser.ExtractRequest{
+		FileUrl: fileId,
+	})
+	var data []byte
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			stream.CloseSend()
+			break
+		}
+		if err != nil {
+			return "", err
+		}
+		data = append(data, req.FileContent...)
+	}
+
+	t := struct {
+		CvID string `json:"cvId"`
+		Text string `json:"text"`
+	}{
+		CvID: cvId,
+		Text: string(data),
+	}
+	jdata, err := json.Marshal(t)
+	if err != nil {
+		slog.Error("cannot marshal json")
+		return "", err
+	}
+
+	_, err = js.Publish("cv.new", jdata)
+	if err != nil {
+		slog.Error("cannot publish message to cv.new")
+		return "", err
+	}
+
+	return cvId, nil
 }
 
 func (s *CvsService) GetOne(ctx context.Context, id string) (*domain.CV, error) {

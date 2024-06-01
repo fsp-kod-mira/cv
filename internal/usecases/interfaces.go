@@ -6,7 +6,7 @@ import (
 )
 
 type CvsRepository interface {
-	Upload(ctx context.Context, uploadedById string, fileId string) error
+	Upload(ctx context.Context, uploadedById string, fileId string) (string, error)
 	GetOne(ctx context.Context, id string) (*domain.CV, error)
 	GetAll(ctx context.Context, limit, offset int) ([]*domain.CV, error)
 	GetFeaturesByCvId(ctx context.Context, id string) ([]*domain.Feature, error)
@@ -14,7 +14,7 @@ type CvsRepository interface {
 }
 
 type CvsUsecases interface {
-	Upload(ctx context.Context, uploadedById string, fileId string) error
+	Upload(ctx context.Context, uploadedById string, fileId string) (string, error)
 	GetOne(ctx context.Context, id string) (*domain.CV, error)
 	GetAll(ctx context.Context, limit, offset int) ([]*domain.CV, error)
 	GetFeaturesByCvId(ctx context.Context, id string) ([]*domain.Feature, error)

@@ -19,14 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Feature_AddPriority_FullMethodName     = "/FeatureService.Feature/AddPriority"
-	Feature_AddFeature_FullMethodName      = "/FeatureService.Feature/AddFeature"
-	Feature_DelPriority_FullMethodName     = "/FeatureService.Feature/DelPriority"
-	Feature_DelFeature_FullMethodName      = "/FeatureService.Feature/DelFeature"
-	Feature_EditPriority_FullMethodName    = "/FeatureService.Feature/EditPriority"
-	Feature_EditFeature_FullMethodName     = "/FeatureService.Feature/EditFeature"
-	Feature_Get_FullMethodName             = "/FeatureService.Feature/Get"
-	Feature_GetFeaturesById_FullMethodName = "/FeatureService.Feature/GetFeaturesById"
+	Feature_AddPriority_FullMethodName       = "/FeatureService.Feature/AddPriority"
+	Feature_AddFeature_FullMethodName        = "/FeatureService.Feature/AddFeature"
+	Feature_DelPriority_FullMethodName       = "/FeatureService.Feature/DelPriority"
+	Feature_DelFeature_FullMethodName        = "/FeatureService.Feature/DelFeature"
+	Feature_EditPriority_FullMethodName      = "/FeatureService.Feature/EditPriority"
+	Feature_EditFeature_FullMethodName       = "/FeatureService.Feature/EditFeature"
+	Feature_Get_FullMethodName               = "/FeatureService.Feature/Get"
+	Feature_GetFeaturesById_FullMethodName   = "/FeatureService.Feature/GetFeaturesById"
+	Feature_GetFeaturesByName_FullMethodName = "/FeatureService.Feature/GetFeaturesByName"
 )
 
 // FeatureClient is the client API for Feature service.
@@ -41,6 +42,7 @@ type FeatureClient interface {
 	EditFeature(ctx context.Context, in *IdStruct, opts ...grpc.CallOption) (*Empty, error)
 	Get(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*HibrydFeatureList, error)
 	GetFeaturesById(ctx context.Context, in *IdStruct, opts ...grpc.CallOption) (*HibrydFeature, error)
+	GetFeaturesByName(ctx context.Context, in *NameStruct, opts ...grpc.CallOption) (*FeatureStruct, error)
 }
 
 type featureClient struct {
@@ -123,6 +125,15 @@ func (c *featureClient) GetFeaturesById(ctx context.Context, in *IdStruct, opts 
 	return out, nil
 }
 
+func (c *featureClient) GetFeaturesByName(ctx context.Context, in *NameStruct, opts ...grpc.CallOption) (*FeatureStruct, error) {
+	out := new(FeatureStruct)
+	err := c.cc.Invoke(ctx, Feature_GetFeaturesByName_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FeatureServer is the server API for Feature service.
 // All implementations must embed UnimplementedFeatureServer
 // for forward compatibility
@@ -135,6 +146,7 @@ type FeatureServer interface {
 	EditFeature(context.Context, *IdStruct) (*Empty, error)
 	Get(context.Context, *Empty) (*HibrydFeatureList, error)
 	GetFeaturesById(context.Context, *IdStruct) (*HibrydFeature, error)
+	GetFeaturesByName(context.Context, *NameStruct) (*FeatureStruct, error)
 	mustEmbedUnimplementedFeatureServer()
 }
 
@@ -165,6 +177,9 @@ func (UnimplementedFeatureServer) Get(context.Context, *Empty) (*HibrydFeatureLi
 }
 func (UnimplementedFeatureServer) GetFeaturesById(context.Context, *IdStruct) (*HibrydFeature, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFeaturesById not implemented")
+}
+func (UnimplementedFeatureServer) GetFeaturesByName(context.Context, *NameStruct) (*FeatureStruct, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFeaturesByName not implemented")
 }
 func (UnimplementedFeatureServer) mustEmbedUnimplementedFeatureServer() {}
 
@@ -323,6 +338,24 @@ func _Feature_GetFeaturesById_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Feature_GetFeaturesByName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NameStruct)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FeatureServer).GetFeaturesByName(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Feature_GetFeaturesByName_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FeatureServer).GetFeaturesByName(ctx, req.(*NameStruct))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Feature_ServiceDesc is the grpc.ServiceDesc for Feature service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -361,6 +394,10 @@ var Feature_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetFeaturesById",
 			Handler:    _Feature_GetFeaturesById_Handler,
+		},
+		{
+			MethodName: "GetFeaturesByName",
+			Handler:    _Feature_GetFeaturesByName_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

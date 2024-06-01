@@ -7,6 +7,7 @@
 package app
 
 import (
+	"cv/api/document-parser"
 	"cv/api/features"
 	"cv/internal/app/router"
 	"cv/internal/config"
@@ -34,16 +35,24 @@ func InitApp(grpcServer *grpc.Server, log *slog.Logger) (*App, func(), error) {
 		cleanup()
 		return nil, nil, err
 	}
-	cvsUsecases := usecases.NewCvsService(cvsRepository, featureClient)
-	cvServiceServer := router.NewGRPCServer(grpcServer, cvsUsecases, log)
 	conn, cleanup3, err := initNats(configConfig)
 	if err != nil {
 		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
+	documentClient, cleanup4, err := initDataParserGRPC(configConfig)
+	if err != nil {
+		cleanup3()
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	cvsUsecases := usecases.NewCvsService(cvsRepository, featureClient, conn, documentClient)
+	cvServiceServer := router.NewGRPCServer(grpcServer, cvsUsecases, log)
 	app := NewApplication(configConfig, log, dbEngine, cvsUsecases, cvServiceServer, conn, featureClient)
 	return app, func() {
+		cleanup4()
 		cleanup3()
 		cleanup2()
 		cleanup()
@@ -72,6 +81,21 @@ func initFeaturesGRPC(cfg *config.Config) (features.FeatureClient, func(), error
 	}
 
 	client := features.NewFeatureClient(conn)
+	return client, func() {
+		conn.Close()
+	}, nil
+}
+
+func initDataParserGRPC(cfg *config.Config) (document_parser.DocumentClient, func(), error) {
+	host := cfg.TextParserClient.Host
+	port := cfg.TextParserClient.Port
+
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%s", host, port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	client := document_parser.NewDocumentClient(conn)
 	return client, func() {
 		conn.Close()
 	}, nil

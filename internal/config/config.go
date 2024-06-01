@@ -26,6 +26,10 @@ type Config struct {
 		Host string `env:"GRPC_FEATURES_HOST" env-default:"10.244.0.5"`
 		Port string `env:"GRPC_FEATURES_PORT" env-default:"50052"`
 	}
+	TextParserClient struct {
+		Host string `env:"GRPC_TEXT_PARSER_HOST" env-default:"10.244.0.5"`
+		Port string `env:"GRPC_TEXT_PARSER_PORT" env-default:"5256"`
+	}
 }
 
 func New() *Config {

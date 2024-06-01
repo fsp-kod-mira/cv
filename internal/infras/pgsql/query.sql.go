@@ -25,8 +25,8 @@ func (q *Queries) AddFeatureToCV(ctx context.Context, arg AddFeatureToCVParams) 
 	return err
 }
 
-const createCv = `-- name: CreateCv :exec
-insert into cvs(id, uploaded_by_id, file_id) values($1, $2, $3)
+const createCv = `-- name: CreateCv :one
+insert into cvs(id, uploaded_by_id, file_id) values($1, $2, $3) returning id
 `
 
 type CreateCvParams struct {
@@ -35,9 +35,11 @@ type CreateCvParams struct {
 	FileID       string `json:"file_id"`
 }
 
-func (q *Queries) CreateCv(ctx context.Context, arg CreateCvParams) error {
-	_, err := q.db.ExecContext(ctx, createCv, arg.ID, arg.UploadedByID, arg.FileID)
-	return err
+func (q *Queries) CreateCv(ctx context.Context, arg CreateCvParams) (string, error) {
+	row := q.db.QueryRowContext(ctx, createCv, arg.ID, arg.UploadedByID, arg.FileID)
+	var id string
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getAllCvs = `-- name: GetAllCvs :many

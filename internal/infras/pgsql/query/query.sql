@@ -1,5 +1,5 @@
--- name: CreateCv :exec
-insert into cvs(id, uploaded_by_id, file_id) values($1, $2, $3);
+-- name: CreateCv :one
+insert into cvs(id, uploaded_by_id, file_id) values($1, $2, $3) returning id;
 
 -- name: GetCv :one
 select *

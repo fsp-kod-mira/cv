@@ -92,4 +92,5 @@ func (a *App) FeatureHandler(msg *nats.Msg) {
 		slog.Error("cannot add feature to cv")
 		return
 	}
+
 }

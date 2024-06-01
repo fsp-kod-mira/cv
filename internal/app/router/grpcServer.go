@@ -21,7 +21,7 @@ type CvService struct {
 
 func (s *CvService) Upload(ctx context.Context, data *cv.UploadRequest) (*cv.Empty, error) {
 	s.log.Info("trying to upload cv")
-	if err := s.service.Upload(ctx, data.UploadedById, data.FileId); err != nil {
+	if _, err := s.service.Upload(ctx, data.UploadedById, data.FileId); err != nil {
 		s.log.Error(err.Error())
 		return nil, fmt.Errorf("error while upload cv")
 	}
